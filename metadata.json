@@ -1,0 +1,6 @@
+{
+  "name": "Inkwell Daily · 영한 필사 노트",
+  "description": "유튜브 영상과 스크립트를 바탕으로 매일 영어와 한국어를 필사하며 언어 감각과 기록 습관을 기르는 종이 노트 감성 데일리 필사 워크스페이스",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,14 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   CheckCircle2,
   Eye,
   EyeOff,
   PenTool,
   RotateCcw,
+  Slash,
   Square,
   Volume2,
 } from 'lucide-react';
 import type { KoreanMode, SentenceItem, SentenceProgress } from '../types';
+import { getSlashAfterWordIndices } from '../utils/phrasing';
 import { speakEnglish, stopSpeaking } from '../utils/speech';
 import { evaluateTyping, isSentenceDone } from '../utils/storage';
 
@@ -17,7 +19,46 @@ interface SentenceCardProps {
   index: number;
   total: number;
   progress: SentenceProgress;
+  showChunking?: boolean;
+  onToggleChunking?: () => void;
   onUpdateProgress: (patch: Partial<SentenceProgress>) => void;
+}
+
+interface TextSegment {
+  type: 'word' | 'space';
+  wordIndex: number;
+  startIdx: number;
+  text: string;
+}
+
+function tokenizeWithIndices(text: string): TextSegment[] {
+  const segments: TextSegment[] = [];
+  let i = 0;
+  let wordCounter = 0;
+  while (i < text.length) {
+    const isSpace = /\s/.test(text[i]);
+    const start = i;
+    while (i < text.length && /\s/.test(text[i]) === isSpace) {
+      i++;
+    }
+    if (isSpace) {
+      segments.push({
+        type: 'space',
+        wordIndex: wordCounter - 1,
+        startIdx: start,
+        text: text.slice(start, i),
+      });
+    } else {
+      segments.push({
+        type: 'word',
+        wordIndex: wordCounter,
+        startIdx: start,
+        text: text.slice(start, i),
+      });
+      wordCounter++;
+    }
+  }
+  return segments;
 }
 
 export function SentenceCard({
@@ -25,6 +66,8 @@ export function SentenceCard({
   index,
   total,
   progress,
+  showChunking = true,
+  onToggleChunking,
   onUpdateProgress,
 }: SentenceCardProps) {
   const [speechRate, setSpeechRate] = useState<0.8 | 1.0>(1.0);
@@ -41,6 +84,12 @@ export function SentenceCard({
   const { accuracy, isComplete, charStates } = evaluateTyping(
     sentence.english,
     progress.englishInput,
+  );
+
+  const segments = useMemo(() => tokenizeWithIndices(sentence.english), [sentence.english]);
+  const slashAfterWordIndices = useMemo(
+    () => getSlashAfterWordIndices(sentence.english, sentence.chunkedEnglish),
+    [sentence.english, sentence.chunkedEnglish],
   );
 
   const sentenceDone = isSentenceDone(progress);
@@ -128,6 +177,48 @@ export function SentenceCard({
   const hasStartedTyping = progress.englishInput.length > 0;
   const activeCharIndex = progress.englishInput.length;
 
+  const renderChar = (char: string, idx: number) => {
+    if (!hasStartedTyping) {
+      return (
+        <span key={idx} className="text-[#1E1D1B] dark:text-[#F0ECE1]">
+          {char}
+        </span>
+      );
+    }
+
+    const state = charStates[idx];
+    const isCursor = idx === activeCharIndex;
+
+    if (state === 'correct') {
+      return (
+        <span key={idx} className="text-[#1E3A5F] dark:text-[#93C5FD] font-medium">
+          {char}
+        </span>
+      );
+    }
+    if (state === 'wrong') {
+      return (
+        <span
+          key={idx}
+          className="text-[#B91C1C] dark:text-[#FCA5A5] underline decoration-2 underline-offset-4 bg-[#FEE2E2]/65 dark:bg-[#7F1D1D]/45 rounded-[2px]"
+          title="오타가 있습니다"
+        >
+          {char}
+        </span>
+      );
+    }
+    return (
+      <span
+        key={idx}
+        className={`text-[#9D968A] dark:text-[#666057] ${
+          isCursor ? 'border-b-2 border-[#1E3A5F] dark:border-[#7FA6D6]' : ''
+        }`}
+      >
+        {char}
+      </span>
+    );
+  };
+
   return (
     <article className="bg-white dark:bg-[#1C1A17] border border-[#E4DFD3] dark:border-[#2E2A25] rounded-2xl p-6 sm:p-8 transition-colors duration-150">
       {/* Top quiet editorial header */}
@@ -212,10 +303,29 @@ export function SentenceCard({
 
       {/* Section 1: English Original & Live Ink Feedback */}
       <div className="pt-6 pb-7">
-        <div className="mb-3 flex items-center justify-between gap-4">
-          <span className="text-xs font-medium text-[#666158] dark:text-[#A8A196]">
-            01. 영어 원문 필사
-          </span>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-medium text-[#666158] dark:text-[#A8A196]">
+              01. 영어 원문 필사
+            </span>
+            {onToggleChunking && (
+              <button
+                type="button"
+                onClick={onToggleChunking}
+                aria-pressed={showChunking}
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs border transition-colors whitespace-nowrap shrink-0 ${
+                  showChunking
+                    ? 'bg-[#1E3A5F]/8 border-[#1E3A5F]/30 text-[#1E3A5F] dark:bg-[#7FA6D6]/12 dark:border-[#7FA6D6]/35 dark:text-[#93C5FD]'
+                    : 'bg-transparent border-[#E4DFD3] dark:border-[#342F29] text-[#666158] dark:text-[#A8A196] hover:text-[#1E1D1B] dark:hover:text-[#F0ECE1]'
+                }`}
+                title="영어 문장을 의미 단위로 끊어 읽는 / 표시를 켜거나 끕니다"
+              >
+                <Slash className="w-3 h-3" aria-hidden="true" />
+                끊어 읽기
+              </button>
+            )}
+          </div>
+
           <div className="flex items-center gap-3 text-xs font-mono-tabular text-[#666158] dark:text-[#A8A196]">
             <span>
               정확도{' '}
@@ -247,55 +357,28 @@ export function SentenceCard({
           </div>
         </div>
 
-        {/* Character-by-character live ink preview */}
+        {/* Character-by-character live ink preview with optional '/' reading chunk markers */}
         <p
-          className="font-editorial text-xl sm:text-[23px] leading-[1.65] tracking-[-0.01em] select-text mb-3"
+          className="font-editorial text-xl sm:text-[23px] leading-[1.68] tracking-[-0.01em] select-text mb-3"
           aria-label={sentence.english}
         >
-          {sentence.english.split('').map((char, idx) => {
-            if (!hasStartedTyping) {
-              return (
-                <span key={idx} className="text-[#1E1D1B] dark:text-[#F0ECE1]">
-                  {char}
-                </span>
-              );
-            }
-
-            const state = charStates[idx];
-            const isCursor = idx === activeCharIndex;
-
-            if (state === 'correct') {
-              return (
-                <span
-                  key={idx}
-                  className="text-[#1E3A5F] dark:text-[#93C5FD] font-medium"
-                >
-                  {char}
-                </span>
-              );
-            }
-            if (state === 'wrong') {
-              return (
-                <span
-                  key={idx}
-                  className="text-[#B91C1C] dark:text-[#FCA5A5] underline decoration-2 underline-offset-4 bg-[#FEE2E2]/65 dark:bg-[#7F1D1D]/45 rounded-[2px]"
-                  title="오타가 있습니다"
-                >
-                  {char}
-                </span>
-              );
-            }
-            return (
-              <span
-                key={idx}
-                className={`text-[#9D968A] dark:text-[#666057] ${
-                  isCursor ? 'border-b-2 border-[#1E3A5F] dark:border-[#7FA6D6]' : ''
-                }`}
-              >
-                {char}
-              </span>
-            );
-          })}
+          {segments.map((seg, segIdx) => (
+            <span key={segIdx}>
+              {seg.text.split('').map((char, localIdx) =>
+                renderChar(char, seg.startIdx + localIdx),
+              )}
+              {showChunking &&
+                seg.type === 'space' &&
+                slashAfterWordIndices.has(seg.wordIndex) && (
+                  <span
+                    className="ml-0.5 mr-1.5 text-[#1E3A5F] dark:text-[#7FA6D6] font-sans font-semibold select-none"
+                    aria-hidden="true"
+                  >
+                    /
+                  </span>
+                )}
+            </span>
+          ))}
         </p>
 
         {sentence.contextNote && (

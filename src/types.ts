@@ -7,9 +7,22 @@ export interface VocabItem {
 export interface SentenceItem {
   id: string;
   english: string;
+  chunkedEnglish?: string;
   korean: string;
   contextNote: string;
   vocabulary: VocabItem[];
+}
+
+export type QuoteMood = 'kitchen' | 'time_distance' | 'shopping' | 'general';
+
+export interface DailyQuote {
+  id: string;
+  english: string;
+  chunkedEnglish: string;
+  korean: string;
+  author: string;
+  mood: QuoteMood;
+  moodLabel: string;
 }
 
 export interface StudySet {

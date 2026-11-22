@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Grid, List, Printer, X } from 'lucide-react';
 import type { DailyRecord } from '../types';
+import { formatSentenceWithSlashes } from '../utils/phrasing';
 import { formatKoreanDate } from '../utils/storage';
 
 interface PrintSheetModalProps {
@@ -11,6 +12,7 @@ interface PrintSheetModalProps {
 
 export function PrintSheetModal({ isOpen, onClose, record }: PrintSheetModalProps) {
   const [paperStyle, setPaperStyle] = useState<'lined' | 'grid'>('lined');
+  const [includeChunking, setIncludeChunking] = useState(true);
   const [includeKorean, setIncludeKorean] = useState(true);
   const [includeVocab, setIncludeVocab] = useState(true);
   const [practiceRows, setPracticeRows] = useState<3 | 5>(3);
@@ -66,6 +68,16 @@ export function PrintSheetModal({ isOpen, onClose, record }: PrintSheetModalProp
               격자 모눈
             </button>
           </div>
+
+          <label className="inline-flex items-center gap-1.5 text-xs text-[#1E1D1B] dark:text-[#F0ECE1] cursor-pointer">
+            <input
+              type="checkbox"
+              checked={includeChunking}
+              onChange={(e) => setIncludeChunking(e.target.checked)}
+              className="accent-[#1E3A5F]"
+            />
+            끊어 읽기(/) 표시
+          </label>
 
           <label className="inline-flex items-center gap-1.5 text-xs text-[#1E1D1B] dark:text-[#F0ECE1] cursor-pointer">
             <input
@@ -144,7 +156,9 @@ export function PrintSheetModal({ isOpen, onClose, record }: PrintSheetModalProp
                   {String(idx + 1).padStart(2, '0')}
                 </span>
                 <p className="font-editorial text-lg font-medium leading-snug text-[#1E1D1B]">
-                  {s.english}
+                  {includeChunking
+                    ? formatSentenceWithSlashes(s.english, s.chunkedEnglish)
+                    : s.english}
                 </p>
               </div>
 

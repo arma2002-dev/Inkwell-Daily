@@ -13,13 +13,21 @@ import {
   Share2,
   Stamp,
 } from 'lucide-react';
-import type { DailyRecord, SentenceProgress, UnitTopic, ViewLayout } from '../types';
+import type {
+  DailyQuote,
+  DailyRecord,
+  SentenceProgress,
+  UnitTopic,
+  ViewLayout,
+} from '../types';
+import { inferMoodFromStudySet, pickRandomQuoteForMood } from '../data/dailyQuotes';
 import {
   countCompletedSentences,
   createEmptyProgress,
   formatKoreanDate,
   isSentenceDone,
 } from '../utils/storage';
+import { DailyQuoteBanner } from './DailyQuoteBanner';
 import { SentenceCard } from './SentenceCard';
 
 interface DailyWorkspaceProps {
@@ -47,7 +55,11 @@ export function DailyWorkspace({
 }: DailyWorkspaceProps) {
   const [layout, setLayout] = useState<ViewLayout>('step');
   const [unitTopic, setUnitTopic] = useState<UnitTopic>('all');
+  const [showChunking, setShowChunking] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [dailyQuote, setDailyQuote] = useState<DailyQuote>(() =>
+    pickRandomQuoteForMood(inferMoodFromStudySet(record.studySetTitle, sourceSummary)),
+  );
   const [selectedFavoriteId, setSelectedFavoriteId] = useState<string | undefined>(
     record.favoriteSentenceId || record.sentences[0]?.id,
   );
@@ -60,6 +72,11 @@ export function DailyWorkspace({
   const totalCount = record.sentences.length;
   const allDone = totalCount > 0 && completedCount === totalCount;
 
+  const handleShuffleQuote = () => {
+    const mood = inferMoodFromStudySet(record.studySetTitle, sourceSummary, unitTopic);
+    setDailyQuote((prev) => pickRandomQuoteForMood(mood, prev.id));
+  };
+
   const handleReflectionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSaveReflection(selectedFavoriteId, reflectionInput.trim());
@@ -69,6 +86,13 @@ export function DailyWorkspace({
 
   return (
     <div className="space-y-8">
+      {/* Daily Inspirational English Quote matched to today's theme/mood */}
+      <DailyQuoteBanner
+        quote={dailyQuote}
+        showChunking={showChunking}
+        onShuffleQuote={handleShuffleQuote}
+      />
+
       {/* Study Set Header & Mode Toolbar */}
       <section className="flex flex-col lg:flex-row lg:items-end justify-between gap-5 pb-6 border-b border-[#E4DFD3] dark:border-[#2E2A25]">
         <div className="space-y-2 max-w-3xl">
@@ -149,7 +173,16 @@ export function DailyWorkspace({
             <select
               aria-label="생활 단위 주제 선택"
               value={unitTopic}
-              onChange={(e) => setUnitTopic(e.target.value as UnitTopic)}
+              onChange={(e) => {
+                const nextTopic = e.target.value as UnitTopic;
+                setUnitTopic(nextTopic);
+                const nextMood = inferMoodFromStudySet(
+                  record.studySetTitle,
+                  sourceSummary,
+                  nextTopic,
+                );
+                setDailyQuote((prev) => pickRandomQuoteForMood(nextMood, prev.id));
+              }}
               className="px-3 py-2 text-xs font-medium rounded-lg border border-[#D8D1C3] dark:border-[#38332C] bg-white dark:bg-[#1C1A17] text-[#1E1D1B] dark:text-[#F0ECE1] focus:outline-none focus:border-[#1E3A5F] dark:focus:border-[#7FA6D6]"
             >
               <option value="all">전체 생활 단위</option>
@@ -275,6 +308,8 @@ export function DailyWorkspace({
               record.progressBySentenceId[currentSentence.id] ||
               createEmptyProgress(currentSentence.id)
             }
+            showChunking={showChunking}
+            onToggleChunking={() => setShowChunking((prev) => !prev)}
             onUpdateProgress={(patch) => onUpdateSentenceProgress(currentSentence.id, patch)}
           />
         </div>
@@ -287,6 +322,8 @@ export function DailyWorkspace({
               index={idx}
               total={record.sentences.length}
               progress={record.progressBySentenceId[s.id] || createEmptyProgress(s.id)}
+              showChunking={showChunking}
+              onToggleChunking={() => setShowChunking((prev) => !prev)}
               onUpdateProgress={(patch) => onUpdateSentenceProgress(s.id, patch)}
             />
           ))}

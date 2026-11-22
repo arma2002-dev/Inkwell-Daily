@@ -18,6 +18,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du1-s1',
         english:
           'Could you grab a dozen eggs and half a gallon of milk on your way back from the grocery store?',
+        chunkedEnglish:
+          'Could you grab a dozen eggs / and half a gallon of milk / on your way back / from the grocery store?',
         korean:
           '마트에서 돌아오는 길에 달걀 한 다스(12개)랑 우유 반 갤런만 사다 줄래?',
         contextNote:
@@ -44,6 +46,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du1-s2',
         english:
           'Add just a pinch of sea salt and two tablespoons of olive oil before simmering the sauce for ten minutes.',
+        chunkedEnglish:
+          'Add just a pinch of sea salt / and two tablespoons of olive oil / before simmering the sauce / for ten minutes.',
         korean:
           '소스를 10분간 약불로 끓이기 전에 바다 소금 한 꼬집과 올리브유 두 큰술만 넣어 주세요.',
         contextNote:
@@ -70,6 +74,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du1-s3',
         english:
           'I usually order a twelve-ounce oat latte with a single shot of espresso and two pumps of vanilla syrup.',
+        chunkedEnglish:
+          'I usually order a twelve-ounce oat latte / with a single shot of espresso / and two pumps of vanilla syrup.',
         korean:
           '나는 보통 12온스짜리 오트 라떼에 에스프레소 싱글 샷, 바닐라 시럽 두 펌프를 넣어 주문해.',
         contextNote:
@@ -96,6 +102,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du1-s4',
         english:
           'Cut the butter into half-inch cubes so it softens within fifteen minutes at room temperature.',
+        chunkedEnglish:
+          'Cut the butter into half-inch cubes / so it softens within fifteen minutes / at room temperature.',
         korean:
           '버터가 실온에서 15분 안에 부드러워지도록 0.5인치(약 1.3cm) 정육면체 크기로 잘라 두세요.',
         contextNote:
@@ -122,6 +130,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du1-s5',
         english:
           'Slice me a quarter pound of smoked turkey and a couple of thick slices of sourdough bread, please.',
+        chunkedEnglish:
+          'Slice me a quarter pound / of smoked turkey / and a couple of thick slices / of sourdough bread, please.',
         korean:
           '훈제 칠면조 고기 4분의 1파운드(약 113g)랑 사워도우 빵 두툼하게 두 조각만 썰어 주세요.',
         contextNote:
@@ -159,6 +169,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du2-s1',
         english:
           'The subway station is only three blocks away, which takes roughly five minutes on foot.',
+        chunkedEnglish:
+          'The subway station is only three blocks away, / which takes roughly five minutes / on foot.',
         korean:
           '지하철역은 여기서 딱 세 블록 거리라서 걸어서 대략 5분 정도밖에 안 걸려요.',
         contextNote:
@@ -185,6 +197,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du2-s2',
         english:
           'It dropped to thirty-two degrees Fahrenheit overnight, so remember to bring a warm scarf this morning.',
+        chunkedEnglish:
+          'It dropped to thirty-two degrees Fahrenheit / overnight, / so remember to bring a warm scarf / this morning.',
         korean:
           '밤새 기온이 화씨 32도(섭씨 0도)까지 내려갔으니 오늘 아침엔 꼭 따뜻한 목도리를 챙기세요.',
         contextNote:
@@ -211,6 +225,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du2-s3',
         english:
           'The bus runs every twenty minutes on weekdays, but it comes only once an hour on Sunday mornings.',
+        chunkedEnglish:
+          'The bus runs every twenty minutes / on weekdays, / but it comes only once an hour / on Sunday mornings.',
         korean:
           '버스는 평일에는 20분 간격으로 다니지만, 일요일 아침에는 한 시간에 한 번만 와요.',
         contextNote:
@@ -237,6 +253,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du2-s4',
         english:
           'We drove nearly forty miles along the coast before stopping at a quiet diner for half an hour.',
+        chunkedEnglish:
+          'We drove nearly forty miles / along the coast / before stopping at a quiet diner / for half an hour.',
         korean:
           '우리는 해안도로를 따라 거의 40마일(약 64km)을 달린 뒤에야 조용한 식당에 들러 30분간 쉬었다.',
         contextNote:
@@ -263,6 +281,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du2-s5',
         english:
           'Try standing at least six feet apart in line and take a two-minute stretch whenever your shoulders feel stiff.',
+        chunkedEnglish:
+          'Try standing at least six feet apart / in line / and take a two-minute stretch / whenever your shoulders feel stiff.',
         korean:
           '줄을 설 때는 최소 6피트(약 1.8m) 간격을 두고, 어깨가 뻐근할 때마다 2분씩 스트레칭을 해 보세요.',
         contextNote:
@@ -300,6 +320,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du3-s1',
         english:
           'These ripe peaches are three bucks a pound, or you can grab a whole basket for ten dollars.',
+        chunkedEnglish:
+          'These ripe peaches are three bucks a pound, / or you can grab a whole basket / for ten dollars.',
         korean:
           '이 잘 익은 복숭아는 파운드당 3달러이고, 한 바구니 통째로는 10달러에 가져가실 수 있어요.',
         contextNote:
@@ -326,6 +348,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du3-s2',
         english:
           'Drink at least eight glasses of water a day and keep a handful of almonds on your desk for afternoon snacks.',
+        chunkedEnglish:
+          'Drink at least eight glasses of water a day / and keep a handful of almonds / on your desk / for afternoon snacks.',
         korean:
           '하루에 최소 여덟 잔의 물을 마시고, 오후 간식으로 책상 위에 아몬드 한 줌을 챙겨 두세요.',
         contextNote:
@@ -352,6 +376,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du3-s3',
         english:
           'The museum charges fifteen dollars per person, though children under twelve get in for fifty percent off.',
+        chunkedEnglish:
+          'The museum charges fifteen dollars per person, / though children under twelve / get in for fifty percent off.',
         korean:
           '박물관 입장료는 1인당 15달러이지만, 12세 미만 어린이는 50퍼센트 할인을 받을 수 있어요.',
         contextNote:
@@ -378,6 +404,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du3-s4',
         english:
           'I picked up two pairs of wool socks and a three-pack of pocket notebooks for my winter trip.',
+        chunkedEnglish:
+          'I picked up two pairs of wool socks / and a three-pack of pocket notebooks / for my winter trip.',
         korean:
           '겨울 여행을 위해 양모 양말 두 켤레와 3개입 묶음 포켓 노트를 하나 사 왔어요.',
         contextNote:
@@ -404,6 +432,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du3-s5',
         english:
           'Set aside just fifteen minutes twice a week to review your expenses, and you will save hundreds of dollars a year.',
+        chunkedEnglish:
+          'Set aside just fifteen minutes twice a week / to review your expenses, / and you will save / hundreds of dollars a year.',
         korean:
           '일주일에 두 번, 딱 15분만 따로 내어 지출을 돌아보면 일 년에 수백 달러는 거뜬히 아낄 수 있어요.',
         contextNote:
@@ -441,6 +471,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du4-s1',
         english:
           'Preheat the oven to three hundred fifty degrees and whisk two cups of flour with one teaspoon of baking soda.',
+        chunkedEnglish:
+          'Preheat the oven to three hundred fifty degrees / and whisk two cups of flour / with one teaspoon of baking soda.',
         korean:
           '오븐을 화씨 350도(약 섭씨 177도)로 예열하고 밀가루 두 컵(약 240g)에 베이킹소다 한 작은술을 섞어 주세요.',
         contextNote:
@@ -462,6 +494,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du4-s2',
         english:
           'Add a splash of cold milk and half a teaspoon of honey to balance the bitter roast of your morning coffee.',
+        chunkedEnglish:
+          'Add a splash of cold milk / and half a teaspoon of honey / to balance the bitter roast / of your morning coffee.',
         korean:
           '모닝커피의 쌉싸름한 맛을 잡아주려면 차가운 우유를 살짝(한 방울) 넣고 꿀 반 작은술을 더해 보세요.',
         contextNote:
@@ -483,6 +517,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du4-s3',
         english:
           'Simmer two quarts of vegetable broth in a deep pot until the liquid reduces by roughly one third.',
+        chunkedEnglish:
+          'Simmer two quarts of vegetable broth / in a deep pot / until the liquid reduces / by roughly one third.',
         korean:
           '깊은 냄비에 채소 육수 2쿼트(약 1.9리터)를 넣고 국물이 약 3분의 1 정도 줄어들 때까지 뭉근히 끓여 주세요.',
         contextNote:
@@ -504,6 +540,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du4-s4',
         english:
           'Measure out eight ounces of dark chocolate and melt it slowly over a pot of barely simmering water.',
+        chunkedEnglish:
+          'Measure out eight ounces of dark chocolate / and melt it slowly / over a pot of barely simmering water.',
         korean:
           '다크 초콜릿 8온스(약 227g)를 계량한 뒤, 약하게 끓는 물 냄비 위에서 천천히 중탕해 녹여 주세요.',
         contextNote:
@@ -525,6 +563,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du4-s5',
         english:
           'Serve each bowl with three thin slices of avocado and a generous squeeze of fresh lime juice on top.',
+        chunkedEnglish:
+          'Serve each bowl / with three thin slices of avocado / and a generous squeeze / of fresh lime juice on top.',
         korean:
           '각 그릇마다 얇게 썬 아보카도 세 조각을 올리고 신선한 라임 즙을 듬뿍 짜서 내어 보세요.',
         contextNote:
@@ -557,6 +597,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du5-s1',
         english:
           'The speed limit drops to twenty-five miles per hour as soon as you enter the quiet school zone.',
+        chunkedEnglish:
+          'The speed limit drops / to twenty-five miles per hour / as soon as you enter / the quiet school zone.',
         korean:
           '조용한 어린이 보호구역에 들어서자마자 제한 속도가 시속 25마일(약 40km/h)로 낮아집니다.',
         contextNote:
@@ -578,6 +620,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du5-s2',
         english:
           'Our morning ferry leaves on the hour, so catching the nine o’clock boat gives us plenty of margin.',
+        chunkedEnglish:
+          'Our morning ferry leaves on the hour, / so catching the nine o’clock boat / gives us plenty of margin.',
         korean:
           '아침 페리는 매시 정각에 출발하므로 9시 배를 타면 시간 여유가 넉넉할 거예요.',
         contextNote:
@@ -599,6 +643,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du5-s3',
         english:
           'The trail climbs four hundred feet over the final half mile, offering a clear view of the entire valley.',
+        chunkedEnglish:
+          'The trail climbs four hundred feet / over the final half mile, / offering a clear view / of the entire valley.',
         korean:
           '등산로는 마지막 0.5마일(약 800m) 구간에서 고도가 400피트(약 122m) 높아지며 계곡 전체가 한눈에 펼쳐집니다.',
         contextNote:
@@ -620,6 +666,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du5-s4',
         english:
           'After an eleven-hour flight across the Pacific, even a twenty-minute walk outside helps reset your body clock.',
+        chunkedEnglish:
+          'After an eleven-hour flight / across the Pacific, / even a twenty-minute walk outside / helps reset your body clock.',
         korean:
           '태평양을 건너는 11시간의 비행 뒤에는 밖에서 단 20분만 걸어도 생체 시계를 되돌리는 데 큰 도움이 됩니다.',
         contextNote:
@@ -641,6 +689,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du5-s5',
         english:
           'Turn left about a hundred yards past the stone bridge and look for the small wooden signboard.',
+        chunkedEnglish:
+          'Turn left about a hundred yards / past the stone bridge / and look for the small wooden signboard.',
         korean:
           '돌다리를 지나 약 100야드(약 91m)쯤 가서 왼쪽으로 돈 다음 작은 나무 간판을 찾으세요.',
         contextNote:
@@ -673,6 +723,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du6-s1',
         english:
           'Could I get half a dozen sourdough rolls and two jars of blueberry jam wrapped separately, please?',
+        chunkedEnglish:
+          'Could I get half a dozen sourdough rolls / and two jars of blueberry jam / wrapped separately, please?',
         korean:
           '사워도우 롤빵 반 다스(6개)랑 블루베리 잼 두 병을 각각 따로 포장해 주실 수 있을까요?',
         contextNote:
@@ -694,6 +746,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du6-s2',
         english:
           'In most sit-down restaurants here, leaving an eighteen percent tip on the subtotal is considered standard.',
+        chunkedEnglish:
+          'In most sit-down restaurants here, / leaving an eighteen percent tip / on the subtotal / is considered standard.',
         korean:
           '이곳의 대부분 테이블 서비스 식당에서는 세전 합계 금액의 18퍼센트를 팁으로 남기는 것이 일반적이에요.',
         contextNote:
@@ -715,6 +769,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du6-s3',
         english:
           'This refill pouch holds thirty-four fluid ounces, which saves nearly twenty percent compared to buying small bottles.',
+        chunkedEnglish:
+          'This refill pouch holds thirty-four fluid ounces, / which saves nearly twenty percent / compared to buying small bottles.',
         korean:
           '이 리필 파우치는 34액량온스(약 1리터) 용량이라서 작은 병을 여러 개 사는 것보다 거의 20퍼센트 저렴해요.',
         contextNote:
@@ -736,6 +792,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du6-s4',
         english:
           'The farmer’s market sells fresh bunches of basil for two dollars each, or three bunches for five bucks.',
+        chunkedEnglish:
+          'The farmer’s market sells fresh bunches of basil / for two dollars each, / or three bunches / for five bucks.',
         korean:
           '파머스 마켓에서는 신선한 바질 한 다발을 개당 2달러에, 세 다발 묶음은 5달러에 팔고 있어요.',
         contextNote:
@@ -757,6 +815,8 @@ export const DAILY_SETS_BANK: CuratedStudySet[] = [
         id: 'du6-s5',
         english:
           'If your checked suitcase weighs over fifty pounds, the airline charges a flat fee of seventy-five dollars.',
+        chunkedEnglish:
+          'If your checked suitcase weighs over fifty pounds, / the airline charges a flat fee / of seventy-five dollars.',
         korean:
           '위탁 수하물 무게가 50파운드(약 22.7kg)를 넘으면 항공사에서 75달러의 정액 수수료를 부과합니다.',
         contextNote:

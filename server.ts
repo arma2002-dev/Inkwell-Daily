@@ -63,9 +63,10 @@ ${excludeSentences.length > 0 ? `Do not repeat:\n${excludeSentences.slice(0, 8).
 
 Rules:
 1. Return **exactly 5** standalone everyday English sentences (12–22 words each) naturally using practical units.
-2. Pair each with a natural Korean translation (add helpful metric conversion in parentheses where useful).
-3. Add a concise 1-line Korean contextNote about how the unit is used.
-4. Include 2 key unit/vocabulary items per sentence (word, concise Korean meaning, short 8–13 word example).
+2. Also provide "chunkedEnglish": the EXACT same English sentence word-for-word, with " / " inserted at natural breath/phrasing pauses (around clauses and prepositional phrases, 3–6 words per chunk) to guide reading aloud.
+3. Pair each with a natural Korean translation (add helpful metric conversion in parentheses where useful).
+4. Add a concise 1-line Korean contextNote about how the unit is used.
+5. Include 2 key unit/vocabulary items per sentence (word, concise Korean meaning, short 8–13 word example).
 `.trim();
 
       const runGeneration = async (modelName: string, useLowThinking: boolean) => {
@@ -96,6 +97,11 @@ Rules:
                     type: Type.OBJECT,
                     properties: {
                       english: { type: Type.STRING },
+                      chunkedEnglish: {
+                        type: Type.STRING,
+                        description:
+                          'Exact same English sentence with " / " inserted at natural reading pause boundaries.',
+                      },
                       korean: { type: Type.STRING },
                       contextNote: { type: Type.STRING },
                       vocabulary: {
@@ -111,7 +117,7 @@ Rules:
                         },
                       },
                     },
-                    required: ['english', 'korean', 'contextNote', 'vocabulary'],
+                    required: ['english', 'chunkedEnglish', 'korean', 'contextNote', 'vocabulary'],
                   },
                 },
               },
@@ -163,6 +169,7 @@ Rules:
         sourceSummary?: string;
         sentences?: Array<{
           english: string;
+          chunkedEnglish?: string;
           korean: string;
           contextNote: string;
           vocabulary: Array<{ word: string; meaning: string; example: string }>;
@@ -184,6 +191,7 @@ Rules:
         sentences: sentences.map((s, idx) => ({
           id: `gen-${Date.now()}-${idx + 1}`,
           english: s.english.trim(),
+          chunkedEnglish: s.chunkedEnglish?.trim() || undefined,
           korean: s.korean.trim(),
           contextNote: s.contextNote?.trim() || '',
           vocabulary: (s.vocabulary || []).slice(0, 3),

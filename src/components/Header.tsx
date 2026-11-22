@@ -1,4 +1,4 @@
-import { CalendarDays, Feather, Flame, Moon, NotebookPen, Printer, Sparkles, Sun } from 'lucide-react';
+import { CalendarDays, Feather, Flame, Moon, NotebookPen, Printer, Sun } from 'lucide-react';
 import type { ActiveTab } from '../types';
 
 interface HeaderProps {
@@ -14,7 +14,6 @@ interface HeaderProps {
 
 const NAV_ITEMS: Array<{ id: ActiveTab; label: string; icon: typeof Feather }> = [
   { id: 'today', label: '오늘의 필사', icon: Feather },
-  { id: 'extract', label: '새 영상 불러오기', icon: Sparkles },
   { id: 'archive', label: '나의 필사 노트', icon: NotebookPen },
   { id: 'calendar', label: '습관 캘린더', icon: CalendarDays },
 ];

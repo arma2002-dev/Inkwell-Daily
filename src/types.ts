@@ -51,6 +51,6 @@ export interface DailyRecord {
   isStamped: boolean;
 }
 
-export type ActiveTab = 'today' | 'extract' | 'archive' | 'calendar';
+export type ActiveTab = 'today' | 'archive' | 'calendar';
 export type ViewLayout = 'step' | 'list';
-export type FocusStyle = 'balanced' | 'conversational' | 'literary';
+export type UnitTopic = 'all' | 'kitchen' | 'time_distance' | 'shopping';

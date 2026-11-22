@@ -1,10 +1,10 @@
-import { SAMPLE_DAY1_SET } from '../data/sampleDay1';
+import { DAILY_SETS_BANK, SAMPLE_DAY1_SET } from '../data/sampleDay1';
 import type { DailyRecord, SentenceItem, SentenceProgress, StudySet } from '../types';
 
 const STORAGE_KEYS = {
-  STUDY_SETS: 'inkwell_study_sets_v1',
-  ACTIVE_SET_ID: 'inkwell_active_set_id_v1',
-  DAILY_RECORDS: 'inkwell_daily_records_v1',
+  STUDY_SETS: 'inkwell_study_sets_v3',
+  ACTIVE_SET_ID: 'inkwell_active_set_id_v3',
+  DAILY_RECORDS: 'inkwell_daily_records_v3',
   THEME: 'inkwell_theme_v1',
 } as const;
 
@@ -28,16 +28,19 @@ export function loadStudySets(): StudySet[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.STUDY_SETS);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEYS.STUDY_SETS, JSON.stringify([SAMPLE_DAY1_SET]));
-      return [SAMPLE_DAY1_SET];
+      localStorage.setItem(STORAGE_KEYS.STUDY_SETS, JSON.stringify(DAILY_SETS_BANK));
+      return DAILY_SETS_BANK;
     }
     const parsed = JSON.parse(raw) as StudySet[];
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      return [SAMPLE_DAY1_SET];
+      return DAILY_SETS_BANK;
     }
-    return parsed;
+    return parsed.map((set) => ({
+      ...set,
+      sentences: set.sentences.slice(0, 5),
+    }));
   } catch {
-    return [SAMPLE_DAY1_SET];
+    return DAILY_SETS_BANK;
   }
 }
 

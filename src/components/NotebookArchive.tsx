@@ -7,6 +7,7 @@ import {
   FileText,
   NotebookPen,
   Search,
+  Share2,
 } from 'lucide-react';
 import type { DailyRecord } from '../types';
 import {
@@ -20,11 +21,16 @@ import {
 interface NotebookArchiveProps {
   records: Record<string, DailyRecord>;
   initialSelectedDate?: string | null;
+  onOpenShareRecord: (record: DailyRecord) => void;
 }
 
 type ArchiveFilter = 'all' | 'stamped' | 'reflected';
 
-export function NotebookArchive({ records, initialSelectedDate }: NotebookArchiveProps) {
+export function NotebookArchive({
+  records,
+  initialSelectedDate,
+  onOpenShareRecord,
+}: NotebookArchiveProps) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<ArchiveFilter>('all');
   const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>(() =>
@@ -226,7 +232,17 @@ export function NotebookArchive({ records, initialSelectedDate }: NotebookArchiv
                     </h2>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {(rec.isStamped || doneCount >= rec.sentences.length) && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenShareRecord(rec)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-[#1E3A5F]/40 dark:border-[#7FA6D6]/40 text-[#1E3A5F] dark:text-[#93C5FD] hover:bg-[#1E3A5F]/5 dark:hover:bg-[#7FA6D6]/10 transition-colors whitespace-nowrap"
+                      >
+                        <Share2 className="w-3.5 h-3.5" aria-hidden="true" />
+                        이미지 공유하기
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() =>

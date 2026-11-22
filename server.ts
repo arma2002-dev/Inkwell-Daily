@@ -25,254 +25,83 @@ function getGeminiClient(): GoogleGenAI {
   });
 }
 
-function extractYouTubeId(rawUrl: string): string | null {
-  try {
-    const trimmed = rawUrl.trim();
-    const url = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
-    if (url.hostname === 'youtu.be' || url.hostname.endsWith('.youtu.be')) {
-      const id = url.pathname.replace(/^\//, '').split('/')[0];
-      return id || null;
-    }
-    if (url.hostname.includes('youtube.com')) {
-      const v = url.searchParams.get('v');
-      if (v) return v;
-      const parts = url.pathname.split('/').filter(Boolean);
-      const markerIdx = parts.findIndex((p) => p === 'shorts' || p === 'embed' || p === 'live');
-      if (markerIdx !== -1 && parts[markerIdx + 1]) {
-        return parts[markerIdx + 1];
-      }
-    }
-  } catch {
-    return null;
-  }
-  return null;
-}
-
-function decodeXmlEntities(text: string): string {
-  return text
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#x27;/g, "'")
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-async function fetchYouTubeContext(videoId: string): Promise<{
-  title: string;
-  author: string;
-  transcript: string;
-}> {
-  let title = '';
-  let author = '';
-  let transcript = '';
-
-  try {
-    const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}&format=json`;
-    const oembedRes = await fetch(oembedUrl, { signal: AbortSignal.timeout(5000) });
-    if (oembedRes.ok) {
-      const data = (await oembedRes.json()) as { title?: string; author_name?: string };
-      title = data.title || '';
-      author = data.author_name || '';
-    }
-  } catch {
-    // Continue gracefully without oEmbed metadata
-  }
-
-  try {
-    const watchUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}&hl=en`;
-    const pageRes = await fetch(watchUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; InkwellStudyBot/1.0)',
-        'Accept-Language': 'en-US,en;q=0.9,ko;q=0.8',
-      },
-      signal: AbortSignal.timeout(6000),
-    });
-
-    if (pageRes.ok) {
-      const html = await pageRes.text();
-      if (!title) {
-        const titleMatch = html.match(/<title>(.*?)<\/title>/i);
-        if (titleMatch?.[1]) {
-          title = titleMatch[1].replace(/\s*-\s*YouTube\s*$/i, '').trim();
-        }
-      }
-
-      const captionsMatch = html.match(/"captionTracks":(\[.*?\])/);
-      if (captionsMatch?.[1]) {
-        const tracks = JSON.parse(captionsMatch[1]) as Array<{
-          baseUrl?: string;
-          languageCode?: string;
-        }>;
-        const preferred =
-          tracks.find((t) => t.languageCode?.startsWith('en')) ||
-          tracks.find((t) => t.languageCode?.startsWith('ko')) ||
-          tracks[0];
-
-        if (preferred?.baseUrl) {
-          const capRes = await fetch(preferred.baseUrl, { signal: AbortSignal.timeout(5000) });
-          if (capRes.ok) {
-            const xml = await capRes.text();
-            const textMatches = Array.from(xml.matchAll(/<text[^>]*>([\s\S]*?)<\/text>/g));
-            const joined = textMatches.map((m) => decodeXmlEntities(m[1])).join(' ');
-            transcript = joined.slice(0, 12000);
-          }
-        }
-      }
-    }
-  } catch {
-    // Fall back to Gemini search/URL context
-  }
-
-  return { title, author, transcript };
-}
-
-interface ExtractRequestBody {
-  youtubeUrl?: string;
-  scriptText?: string;
-  focusStyle?: 'balanced' | 'conversational' | 'literary';
+interface DailySentencesRequestBody {
+  dateKey?: string;
+  excludeSentences?: string[];
+  unitTopic?: 'all' | 'kitchen' | 'time_distance' | 'shopping';
 }
 
 async function startServer() {
   const app = express();
   app.use(express.json({ limit: '1mb' }));
 
-  app.post('/api/extract-sentences', async (req: Request, res: Response) => {
+  app.post('/api/daily-sentences', async (req: Request, res: Response) => {
     try {
-      const body = (req.body || {}) as ExtractRequestBody;
-      const youtubeUrl = typeof body.youtubeUrl === 'string' ? body.youtubeUrl.trim() : '';
-      const scriptText = typeof body.scriptText === 'string' ? body.scriptText.trim() : '';
-      const focusStyle = body.focusStyle || 'balanced';
+      const body = (req.body || {}) as DailySentencesRequestBody;
+      const dateKey = typeof body.dateKey === 'string' ? body.dateKey : new Date().toISOString().slice(0, 10);
+      const excludeSentences = Array.isArray(body.excludeSentences)
+        ? body.excludeSentences.slice(0, 15)
+        : [];
+      const unitTopic = body.unitTopic || 'all';
 
-      if (!youtubeUrl && !scriptText) {
-        res.status(400).json({
-          error: '유튜브 URL 또는 스크립트 텍스트를 입력해 주세요.',
-        });
-        return;
-      }
+      const topicGuidance =
+        unitTopic === 'kitchen'
+          ? 'Focus on everyday kitchen, recipe, cafe, and grocery units (e.g., tablespoon, teaspoon, cup, pinch of, ounce, quart, gallon, half-inch, dozen, slice).'
+          : unitTopic === 'time_distance'
+            ? 'Focus on everyday time, distance, speed, and weather units (e.g., blocks away, miles, feet, degrees Fahrenheit/Celsius, every X minutes, half an hour, once a week).'
+            : unitTopic === 'shopping'
+              ? 'Focus on everyday shopping, price, quantity, and portion units (e.g., bucks, per pound, per person, percent off, pair of, pack of, handful of, glasses of, twice a month).'
+              : 'Cover a varied mix of real-life everyday English units across cooking/cafe (cup, tablespoon, ounce, pinch), distance/time/weather (blocks, miles, feet, degrees, minutes, half an hour), and shopping/quantities (dozen, pound, bucks, per person, percent off, pair, handful).';
 
       const ai = getGeminiClient();
 
-      let videoId: string | null = null;
-      let ytTitle = '';
-      let ytAuthor = '';
-      let ytTranscript = '';
+      const prompt = `
+You are an expert bilingual English-Korean language curator creating a practical daily transcription (필사) set focused on **everyday units, measurements, quantities, and portion expressions used in real daily life**.
+Create a brand-new set of **exactly 5** natural, conversational or practical everyday English sentences for ${dateKey}.
 
-      if (youtubeUrl) {
-        videoId = extractYouTubeId(youtubeUrl);
-        if (videoId) {
-          const ctx = await fetchYouTubeContext(videoId);
-          ytTitle = ctx.title;
-          ytAuthor = ctx.author;
-          ytTranscript = ctx.transcript;
-        }
-      }
+${topicGuidance}
 
-      let gatheredContext = scriptText;
+${excludeSentences.length > 0 ? `Avoid repeating or closely paraphrasing these previous sentences:\n${excludeSentences.map((s) => `- ${s}`).join('\n')}` : ''}
 
-      if (!gatheredContext && youtubeUrl) {
-        if (ytTranscript.length > 120) {
-          gatheredContext = ytTranscript;
-        } else {
-          // Use Gemini Search + URL Context to research the exact video topic, themes, and spoken insights
-          const researchPrompt = [
-            `Research the YouTube video at ${youtubeUrl}${ytTitle ? ` (Title: "${ytTitle}"${ytAuthor ? `, Channel: "${ytAuthor}"` : ''})` : ''}.`,
-            'Summarize the video topic, key spoken points, core advice, and memorable phrases/lessons in detail so that an English-Korean daily transcription curriculum can be created from its authentic message.',
-            'Include the video title if known.',
-          ].join('\n');
-
-          const researchRes = await ai.models.generateContent({
-            model: 'gemini-4-hydrogen',
-            contents: researchPrompt,
-            config: {
-              tools: [{ googleSearch: {} }, { urlContext: {} }],
-            },
-          });
-
-          gatheredContext = researchRes.text?.trim() || '';
-        }
-      }
-
-      if (!gatheredContext && !ytTitle) {
-        res.status(400).json({
-          error: '영상 정보를 불러오지 못했습니다. 유효한 유튜브 URL이거나 스크립트 텍스트를 함께 입력해 주세요.',
-        });
-        return;
-      }
-
-      const styleInstruction =
-        focusStyle === 'conversational'
-          ? 'Favor crisp, practical spoken English expressions and natural everyday cadence.'
-          : focusStyle === 'literary'
-            ? 'Favor evocative, reflective prose and nuanced advanced idioms suitable for deep contemplation.'
-            : 'Balance clarity, natural English rhythm, and meaningful insight ideal for mindful daily handwriting/typing practice.';
-
-      const extractionPrompt = `
-You are an expert bilingual English-Korean language educator and transcription (필사) curator.
-Based on the source material below, create a curated daily transcription set of exactly 6 core English sentences (between 5 and 7 sentences) with natural, expressive Korean translations and 2-3 key vocabulary/expression notes per sentence.
-
-${styleInstruction}
-
-Source Metadata:
-- YouTube URL: ${youtubeUrl || 'N/A (User script)'}
-- Detected Video Title: ${ytTitle || 'Unknown'}
-- Channel: ${ytAuthor || 'Unknown'}
-
-Source Content / Transcript / Notes:
-${gatheredContext || `Video Title: ${ytTitle}`}
-
-Guidelines:
-1. Each English sentence must be 12–28 words long, grammatically complete, cleanly punctuated, and deeply rewarding to type or write by hand.
-2. If the source material is in Korean (such as a Korean-language video about English learning or life lessons), craft authentic, natural English sentences that faithfully express the core messages and insights of the video, paired with idiomatic Korean translations.
-3. If the source material is in English, refine or select the most impactful 6 sentences verbatim or cleanly edited for standalone clarity, and provide natural literary Korean translations.
-4. For each sentence, include a brief 1-line Korean contextNote explaining its nuance or why it is worth transcribing.
-5. For each sentence, include 2 to 3 key vocabulary items or collocations directly appearing in that sentence, each with:
-   - word: the exact word or phrase from the sentence
-   - meaning: concise Korean meaning
-   - example: a fresh, natural English example sentence (10-16 words).
+Requirements:
+1. Return **exactly 5** standalone, well-punctuated, natural everyday English sentences (12–24 words each). Every single sentence MUST naturally feature at least 1–2 practical daily-life units or quantity expressions (never abstract academic jargon).
+2. Pair each sentence with an idiomatic, natural Korean translation (including helpful Korean metric conversion in parentheses where useful, e.g., 약 355ml / 약 1.8km / 섭씨 0도).
+3. Provide a brief 1-line Korean contextNote explaining how the unit expression is used in real English-speaking daily life.
+4. Provide 2 to 3 key unit/vocabulary expressions directly appearing in that sentence, each with:
+   - word: the exact unit or phrase from the sentence
+   - meaning: concise Korean meaning (with approximate metric equivalent if applicable)
+   - example: a fresh, natural everyday English example sentence (10–15 words).
 `.trim();
 
       const structuredRes = await ai.models.generateContent({
         model: 'gemini-4-hydrogen',
-        contents: extractionPrompt,
+        contents: prompt,
         config: {
           systemInstruction:
-            'You design calm, high-craft bilingual English-Korean daily transcription sets. Output strictly valid JSON matching the requested schema.',
+            'You curate calm, high-craft daily 5-sentence English-Korean transcription sets. Output strictly valid JSON matching the schema.',
           responseMimeType: 'application/json',
           responseSchema: {
             type: Type.OBJECT,
             properties: {
-              videoTitle: {
+              title: {
                 type: Type.STRING,
-                description: 'Concise title of the video or script topic in Korean or original title.',
+                description: 'A calm Korean editorial title for today’s 5-sentence set.',
               },
               sourceSummary: {
                 type: Type.STRING,
-                description: 'A 1-2 sentence calm Korean summary of the theme of this transcription set.',
+                description: 'A 1-2 sentence Korean overview of today’s 5 sentences.',
               },
               sentences: {
                 type: Type.ARRAY,
-                description: '5 to 7 curated English-Korean transcription sentences.',
+                description: 'Exactly 5 English-Korean transcription sentences.',
                 items: {
                   type: Type.OBJECT,
                   properties: {
-                    english: {
-                      type: Type.STRING,
-                      description: 'Standalone, well-punctuated English sentence for transcription.',
-                    },
-                    korean: {
-                      type: Type.STRING,
-                      description: 'Natural, expressive Korean translation.',
-                    },
-                    contextNote: {
-                      type: Type.STRING,
-                      description: 'Short 1-line Korean note on nuance, grammar, or reflection context.',
-                    },
+                    english: { type: Type.STRING },
+                    korean: { type: Type.STRING },
+                    contextNote: { type: Type.STRING },
                     vocabulary: {
                       type: Type.ARRAY,
-                      description: '2 to 3 key vocabulary words or phrases from the sentence.',
                       items: {
                         type: Type.OBJECT,
                         properties: {
@@ -288,14 +117,14 @@ Guidelines:
                 },
               },
             },
-            required: ['videoTitle', 'sourceSummary', 'sentences'],
+            required: ['title', 'sourceSummary', 'sentences'],
           },
         },
       });
 
       const rawJson = (structuredRes.text ?? '{}').trim();
       const parsed = JSON.parse(rawJson) as {
-        videoTitle?: string;
+        title?: string;
         sourceSummary?: string;
         sentences?: Array<{
           english: string;
@@ -305,27 +134,26 @@ Guidelines:
         }>;
       };
 
-      if (!parsed.sentences || parsed.sentences.length === 0) {
+      const sentences = (parsed.sentences || []).slice(0, 5);
+      if (sentences.length < 5) {
         res.status(502).json({
-          error: '문장 추출 결과가 비어 있습니다. 스크립트 내용을 조금 더 구체적으로 입력해 다시 시도해 주세요.',
+          error: '5개의 문장을 생성하지 못했습니다. 잠시 후 다시 시도해 주세요.',
         });
         return;
       }
 
-      const normalized = {
-        videoTitle: parsed.videoTitle || ytTitle || '사용자 맞춤 필사 세트',
-        sourceUrl: youtubeUrl || undefined,
-        sourceSummary: parsed.sourceSummary || '영상의 핵심 메시지를 담은 오늘의 영한 필사 문장입니다.',
-        sentences: parsed.sentences.slice(0, 7).map((s, idx) => ({
-          id: `s-${Date.now()}-${idx + 1}`,
+      res.json({
+        title: parsed.title || '오늘의 새로운 영어 필사 5문장',
+        sourceSummary:
+          parsed.sourceSummary || '차분히 소리 내어 읽고 손끝으로 옮겨 적기 좋은 오늘의 5문장입니다.',
+        sentences: sentences.map((s, idx) => ({
+          id: `gen-${Date.now()}-${idx + 1}`,
           english: s.english.trim(),
           korean: s.korean.trim(),
           contextNote: s.contextNote?.trim() || '',
           vocabulary: (s.vocabulary || []).slice(0, 3),
         })),
-      };
-
-      res.json(normalized);
+      });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       if (message === 'GEMINI_API_KEY_MISSING') {
@@ -346,9 +174,9 @@ Guidelines:
         });
         return;
       }
-      console.error('Error in /api/extract-sentences:', err);
+      console.error('Error in /api/daily-sentences:', err);
       res.status(500).json({
-        error: `문장 분석 중 오류가 발생했습니다: ${message}`,
+        error: `새 문장 생성 중 오류가 발생했습니다: ${message}`,
       });
     }
   });

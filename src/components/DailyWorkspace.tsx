@@ -1,38 +1,52 @@
 import { useState } from 'react';
 import {
+  AlertCircle,
   Check,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
   Layers,
   List,
+  Loader2,
   Printer,
-  Sparkles,
+  RefreshCw,
+  Share2,
   Stamp,
 } from 'lucide-react';
-import type { DailyRecord, SentenceProgress, ViewLayout } from '../types';
-import { countCompletedSentences, createEmptyProgress, formatKoreanDate, isSentenceDone } from '../utils/storage';
+import type { DailyRecord, SentenceProgress, UnitTopic, ViewLayout } from '../types';
+import {
+  countCompletedSentences,
+  createEmptyProgress,
+  formatKoreanDate,
+  isSentenceDone,
+} from '../utils/storage';
 import { SentenceCard } from './SentenceCard';
 
 interface DailyWorkspaceProps {
   record: DailyRecord;
   sourceSummary: string;
+  isGeneratingNew: boolean;
+  generateError: string | null;
   onUpdateSentenceProgress: (sentenceId: string, patch: Partial<SentenceProgress>) => void;
   onSaveReflection: (favoriteSentenceId: string | undefined, reflection: string) => void;
   onOpenPrint: () => void;
-  onGoToExtract: () => void;
+  onOpenShare: () => void;
+  onGenerateNewFive: (unitTopic: UnitTopic) => void;
 }
 
 export function DailyWorkspace({
   record,
   sourceSummary,
+  isGeneratingNew,
+  generateError,
   onUpdateSentenceProgress,
   onSaveReflection,
   onOpenPrint,
-  onGoToExtract,
+  onOpenShare,
+  onGenerateNewFive,
 }: DailyWorkspaceProps) {
   const [layout, setLayout] = useState<ViewLayout>('step');
+  const [unitTopic, setUnitTopic] = useState<UnitTopic>('all');
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedFavoriteId, setSelectedFavoriteId] = useState<string | undefined>(
     record.favoriteSentenceId || record.sentences[0]?.id,
@@ -62,7 +76,7 @@ export function DailyWorkspace({
             <span>{formatKoreanDate(record.date)}</span>
             <span aria-hidden="true">·</span>
             <span className="font-mono-tabular">
-              완료 {completedCount}/{totalCount}문장
+              하루 5문장 루틴 ({completedCount}/{totalCount} 완료)
             </span>
             {record.sourceUrl && (
               <>
@@ -73,7 +87,7 @@ export function DailyWorkspace({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-[#1E3A5F] dark:text-[#93C5FD] hover:underline"
                 >
-                  원본 영상 보기
+                  추천 영상 보기
                   <ExternalLink className="w-3 h-3" aria-hidden="true" />
                 </a>
               </>
@@ -118,7 +132,7 @@ export function DailyWorkspace({
               }`}
             >
               <List className="w-3.5 h-3.5" aria-hidden="true" />
-              전체 한눈에
+              5문장 한눈에
             </button>
           </div>
 
@@ -131,16 +145,74 @@ export function DailyWorkspace({
             손글씨 인쇄 뷰
           </button>
 
-          <button
-            type="button"
-            onClick={onGoToExtract}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium rounded-lg bg-[#1E3A5F] dark:bg-[#7FA6D6] text-white dark:text-[#141311] hover:opacity-90 transition-opacity whitespace-nowrap shrink-0"
-          >
-            <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-            다른 영상 추출
-          </button>
+          <div className="inline-flex items-center gap-1.5">
+            <select
+              aria-label="생활 단위 주제 선택"
+              value={unitTopic}
+              onChange={(e) => setUnitTopic(e.target.value as UnitTopic)}
+              className="px-3 py-2 text-xs font-medium rounded-lg border border-[#D8D1C3] dark:border-[#38332C] bg-white dark:bg-[#1C1A17] text-[#1E1D1B] dark:text-[#F0ECE1] focus:outline-none focus:border-[#1E3A5F] dark:focus:border-[#7FA6D6]"
+            >
+              <option value="all">전체 생활 단위</option>
+              <option value="kitchen">요리 · 카페 계량</option>
+              <option value="time_distance">시간 · 거리 · 날씨</option>
+              <option value="shopping">쇼핑 · 수량 · 가격</option>
+            </select>
+
+            <button
+              type="button"
+              disabled={isGeneratingNew}
+              onClick={() => {
+                setActiveIndex(0);
+                onGenerateNewFive(unitTopic);
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium rounded-lg bg-[#1E3A5F] dark:bg-[#7FA6D6] text-white dark:text-[#141311] hover:opacity-90 disabled:opacity-60 transition-opacity whitespace-nowrap shrink-0"
+            >
+              {isGeneratingNew ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                  새 5문장 준비 중...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
+                  새로운 5문장 받기
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </section>
+
+      {generateError && (
+        <div
+          role="alert"
+          className="flex items-start gap-2.5 p-3.5 rounded-xl border border-[#FCA5A5] dark:border-[#7F1D1D] bg-[#FEF2F2] dark:bg-[#450A0A]/40 text-xs sm:text-sm text-[#991B1B] dark:text-[#FECACA]"
+        >
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+          <span>{generateError}</span>
+        </div>
+      )}
+
+      {(allDone || record.isStamped) && (
+        <section className="bg-white dark:bg-[#1C1A17] border border-[#1E3A5F]/35 dark:border-[#7FA6D6]/40 rounded-2xl px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <div className="text-sm font-semibold text-[#1E3A5F] dark:text-[#93C5FD]">
+              오늘의 필사 {totalCount}문장을 모두 완료했습니다
+            </div>
+            <p className="text-xs text-[#666158] dark:text-[#A8A196]">
+              오늘 가장 마음에 남은 문장을 예쁜 종이 엽서 카드로 만들어 기록하고 공유해 보세요.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenShare}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1E3A5F] dark:bg-[#7FA6D6] text-white dark:text-[#141311] text-xs sm:text-sm font-semibold hover:opacity-90 transition-opacity whitespace-nowrap shrink-0"
+          >
+            <Share2 className="w-4 h-4" aria-hidden="true" />
+            이미지 공유하기
+          </button>
+        </section>
+      )}
 
       {/* Main Typing Workspace */}
       {layout === 'step' && currentSentence ? (
@@ -230,13 +302,13 @@ export function DailyWorkspace({
             </h2>
             <p className="text-sm text-[#666158] dark:text-[#A8A196] mt-1">
               {allDone
-                ? '오늘의 모든 문장을 필사했습니다. 가장 마음에 남은 한 문장과 짧은 소감을 남기고 도장을 찍어 보세요.'
-                : `현재 ${completedCount}/${totalCount}문장을 완료했습니다. 마음에 남은 문장을 골라 오늘의 기록을 남겨 보세요.`}
+                ? '오늘의 5문장을 모두 필사했습니다. 가장 마음에 남은 한 문장과 짧은 소감을 남기고 도장을 찍어 보세요.'
+                : `오늘 5문장 중 ${completedCount}문장을 완료했습니다. 마음에 남은 문장을 골라 오늘의 기록을 남겨 보세요.`}
             </p>
           </div>
           {record.isStamped && (
             <div className="inline-flex items-center gap-1.5 text-xs font-medium text-[#1E3A5F] dark:text-[#93C5FD]">
-              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+              <Stamp className="w-4 h-4" aria-hidden="true" />
               오늘의 출석 도장 완료
             </div>
           )}
@@ -306,13 +378,26 @@ export function DailyWorkspace({
               )}
             </div>
 
-            <button
-              type="submit"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1E3A5F] dark:bg-[#7FA6D6] text-white dark:text-[#141311] text-sm font-semibold hover:opacity-90 transition-opacity whitespace-nowrap shrink-0"
-            >
-              <Stamp className="w-4 h-4" aria-hidden="true" />
-              {record.isStamped ? '회고 수정 및 다시 저장' : '오늘의 필사 완료 & 도장 찍기'}
-            </button>
+            <div className="flex flex-wrap items-center gap-2.5">
+              {(allDone || record.isStamped) && (
+                <button
+                  type="button"
+                  onClick={onOpenShare}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#1E3A5F] dark:border-[#7FA6D6] text-[#1E3A5F] dark:text-[#93C5FD] text-sm font-semibold hover:bg-[#1E3A5F]/5 dark:hover:bg-[#7FA6D6]/10 transition-colors whitespace-nowrap shrink-0"
+                >
+                  <Share2 className="w-4 h-4" aria-hidden="true" />
+                  이미지 공유하기
+                </button>
+              )}
+
+              <button
+                type="submit"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1E3A5F] dark:bg-[#7FA6D6] text-white dark:text-[#141311] text-sm font-semibold hover:opacity-90 transition-opacity whitespace-nowrap shrink-0"
+              >
+                <Stamp className="w-4 h-4" aria-hidden="true" />
+                {record.isStamped ? '회고 수정 및 다시 저장' : '오늘의 필사 완료 & 도장 찍기'}
+              </button>
+            </div>
           </div>
         </form>
       </section>

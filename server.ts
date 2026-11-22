@@ -36,6 +36,7 @@ async function startServer() {
   app.use(express.json({ limit: '1mb' }));
 
   app.post('/api/daily-sentences', async (req: Request, res: Response) => {
+    res.setHeader('Cache-Control', 'no-store');
     try {
       const body = (req.body || {}) as DailySentencesRequestBody;
       const dateKey = typeof body.dateKey === 'string' ? body.dateKey : new Date().toISOString().slice(0, 10);
@@ -72,7 +73,7 @@ Rules:
           model: modelName,
           contents: prompt,
           config: {
-            abortSignal: AbortSignal.timeout(9000),
+            abortSignal: AbortSignal.timeout(6500),
             ...(useLowThinking ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } } : {}),
             systemInstruction:
               'You curate practical daily 5-sentence English-Korean transcription sets. Output strictly valid JSON matching the schema.',
@@ -136,8 +137,8 @@ Rules:
       let lastError: unknown;
 
       const attempts: Array<{ model: string; lowThinking: boolean }> = [
-        { model: 'gemini-4-hydrogen', lowThinking: true },
         { model: 'gemini-3.1-flash-lite', lowThinking: false },
+        { model: 'gemini-4-hydrogen', lowThinking: true },
       ];
 
       for (const attempt of attempts) {

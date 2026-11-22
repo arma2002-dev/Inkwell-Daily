@@ -3,7 +3,7 @@ import express, { type Request, type Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI, ThinkingLevel, Type } from '@google/genai';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,71 +56,105 @@ async function startServer() {
       const ai = getGeminiClient();
 
       const prompt = `
-You are an expert bilingual English-Korean language curator creating a practical daily transcription (필사) set focused on **everyday units, measurements, quantities, and portion expressions used in real daily life**.
-Create a brand-new set of **exactly 5** natural, conversational or practical everyday English sentences for ${dateKey}.
-
+Create a practical daily transcription (필사) set of **exactly 5** natural everyday English sentences (${dateKey}) focused on real-life units, measurements, and quantities.
 ${topicGuidance}
+${excludeSentences.length > 0 ? `Do not repeat:\n${excludeSentences.slice(0, 8).map((s) => `- ${s}`).join('\n')}` : ''}
 
-${excludeSentences.length > 0 ? `Avoid repeating or closely paraphrasing these previous sentences:\n${excludeSentences.map((s) => `- ${s}`).join('\n')}` : ''}
-
-Requirements:
-1. Return **exactly 5** standalone, well-punctuated, natural everyday English sentences (12–24 words each). Every single sentence MUST naturally feature at least 1–2 practical daily-life units or quantity expressions (never abstract academic jargon).
-2. Pair each sentence with an idiomatic, natural Korean translation (including helpful Korean metric conversion in parentheses where useful, e.g., 약 355ml / 약 1.8km / 섭씨 0도).
-3. Provide a brief 1-line Korean contextNote explaining how the unit expression is used in real English-speaking daily life.
-4. Provide 2 to 3 key unit/vocabulary expressions directly appearing in that sentence, each with:
-   - word: the exact unit or phrase from the sentence
-   - meaning: concise Korean meaning (with approximate metric equivalent if applicable)
-   - example: a fresh, natural everyday English example sentence (10–15 words).
+Rules:
+1. Return **exactly 5** standalone everyday English sentences (12–22 words each) naturally using practical units.
+2. Pair each with a natural Korean translation (add helpful metric conversion in parentheses where useful).
+3. Add a concise 1-line Korean contextNote about how the unit is used.
+4. Include 2 key unit/vocabulary items per sentence (word, concise Korean meaning, short 8–13 word example).
 `.trim();
 
-      const structuredRes = await ai.models.generateContent({
-        model: 'gemini-4-hydrogen',
-        contents: prompt,
-        config: {
-          systemInstruction:
-            'You curate calm, high-craft daily 5-sentence English-Korean transcription sets. Output strictly valid JSON matching the schema.',
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              title: {
-                type: Type.STRING,
-                description: 'A calm Korean editorial title for today’s 5-sentence set.',
-              },
-              sourceSummary: {
-                type: Type.STRING,
-                description: 'A 1-2 sentence Korean overview of today’s 5 sentences.',
-              },
-              sentences: {
-                type: Type.ARRAY,
-                description: 'Exactly 5 English-Korean transcription sentences.',
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    english: { type: Type.STRING },
-                    korean: { type: Type.STRING },
-                    contextNote: { type: Type.STRING },
-                    vocabulary: {
-                      type: Type.ARRAY,
-                      items: {
-                        type: Type.OBJECT,
-                        properties: {
-                          word: { type: Type.STRING },
-                          meaning: { type: Type.STRING },
-                          example: { type: Type.STRING },
+      const runGeneration = async (modelName: string, useLowThinking: boolean) => {
+        return ai.models.generateContent({
+          model: modelName,
+          contents: prompt,
+          config: {
+            abortSignal: AbortSignal.timeout(9000),
+            ...(useLowThinking ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } } : {}),
+            systemInstruction:
+              'You curate practical daily 5-sentence English-Korean transcription sets. Output strictly valid JSON matching the schema.',
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                title: {
+                  type: Type.STRING,
+                  description: 'A calm Korean editorial title for today’s 5-sentence set.',
+                },
+                sourceSummary: {
+                  type: Type.STRING,
+                  description: 'A 1-sentence Korean overview of today’s 5 sentences.',
+                },
+                sentences: {
+                  type: Type.ARRAY,
+                  description: 'Exactly 5 English-Korean transcription sentences.',
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      english: { type: Type.STRING },
+                      korean: { type: Type.STRING },
+                      contextNote: { type: Type.STRING },
+                      vocabulary: {
+                        type: Type.ARRAY,
+                        items: {
+                          type: Type.OBJECT,
+                          properties: {
+                            word: { type: Type.STRING },
+                            meaning: { type: Type.STRING },
+                            example: { type: Type.STRING },
+                          },
+                          required: ['word', 'meaning', 'example'],
                         },
-                        required: ['word', 'meaning', 'example'],
                       },
                     },
+                    required: ['english', 'korean', 'contextNote', 'vocabulary'],
                   },
-                  required: ['english', 'korean', 'contextNote', 'vocabulary'],
                 },
               },
+              required: ['title', 'sourceSummary', 'sentences'],
             },
-            required: ['title', 'sourceSummary', 'sentences'],
           },
-        },
-      });
+        });
+      };
+
+      const isTransientError = (err: unknown): boolean => {
+        const msg = err instanceof Error ? err.message : String(err);
+        return (
+          msg.includes('503') ||
+          msg.includes('UNAVAILABLE') ||
+          msg.includes('overloaded') ||
+          msg.includes('TimeoutError') ||
+          msg.includes('aborted') ||
+          msg.includes('timeout')
+        );
+      };
+
+      let structuredRes;
+      let lastError: unknown;
+
+      const attempts: Array<{ model: string; lowThinking: boolean }> = [
+        { model: 'gemini-4-hydrogen', lowThinking: true },
+        { model: 'gemini-3.1-flash-lite', lowThinking: false },
+      ];
+
+      for (const attempt of attempts) {
+        try {
+          structuredRes = await runGeneration(attempt.model, attempt.lowThinking);
+          break;
+        } catch (err) {
+          lastError = err;
+          if (!isTransientError(err)) {
+            throw err;
+          }
+        }
+      }
+
+      if (!structuredRes) {
+        throw lastError || new Error('503 UNAVAILABLE');
+      }
 
       const rawJson = (structuredRes.text ?? '{}').trim();
       const parsed = JSON.parse(rawJson) as {
@@ -174,11 +208,21 @@ Requirements:
         });
         return;
       }
+      if (message.includes('503') || message.includes('UNAVAILABLE')) {
+        res.status(503).json({
+          error: '현재 AI 문장 생성 서버에 일시적으로 요청이 몰려 있습니다. 몇 초 뒤에 다시 눌러 주세요.',
+        });
+        return;
+      }
       console.error('Error in /api/daily-sentences:', err);
       res.status(500).json({
-        error: `새 문장 생성 중 오류가 발생했습니다: ${message}`,
+        error: '새 문장을 생성하는 중 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
       });
     }
+  });
+
+  app.use('/api', (_req: Request, res: Response) => {
+    res.status(404).json({ error: '요청하신 API 경로를 찾을 수 없습니다.' });
   });
 
   if (process.env.NODE_ENV !== 'production') {

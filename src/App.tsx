@@ -157,12 +157,23 @@ export default function App() {
         }),
       });
 
-      const data = (await res.json()) as {
+      const rawText = await res.text();
+      let data: {
         error?: string;
         title?: string;
         sourceSummary?: string;
         sentences?: StudySet['sentences'];
-      };
+      } = {};
+
+      try {
+        data = JSON.parse(rawText) as typeof data;
+      } catch {
+        throw new Error(
+          res.ok
+            ? '서버 응답 형식이 올바르지 않습니다. 잠시 후 다시 시도해 주세요.'
+            : `서버 연결이 지연되었거나 일시적인 오류가 발생했습니다 (HTTP ${res.status}). 잠시 후 다시 시도해 주세요.`,
+        );
+      }
 
       if (!res.ok) {
         throw new Error(data.error || '새로운 5문장을 불러오는 중 오류가 발생했습니다.');

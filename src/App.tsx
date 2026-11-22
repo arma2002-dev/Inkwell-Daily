@@ -5,7 +5,7 @@ import { Header } from './components/Header';
 import { NotebookArchive } from './components/NotebookArchive';
 import { PrintSheetModal } from './components/PrintSheetModal';
 import { ShareCardModal } from './components/ShareCardModal';
-import { getCuratedSetForDate, SAMPLE_DAY1_SET } from './data/sampleDay1';
+import { getCuratedSetForDate, pickNextCuratedSet, SAMPLE_DAY1_SET } from './data/sampleDay1';
 import type { ActiveTab, DailyRecord, SentenceProgress, StudySet, UnitTopic } from './types';
 import {
   calculateStreaks,
@@ -158,6 +158,27 @@ export default function App() {
       });
 
       const rawText = await res.text();
+      const contentType = res.headers.get('content-type') || '';
+      const isJsonResponse = contentType.includes('application/json');
+
+      // If the app is opened on a static-only host where the Express /api route is not mounted
+      // (returns a non-JSON 404 HTML/text page like "The page could not be found"),
+      // rotate smoothly to the next curated everyday-unit set without blocking the user.
+      if (res.status === 404 && !isJsonResponse) {
+        const nextCurated = pickNextCuratedSet(unitTopic, activeSet.id);
+        const clonedSet: StudySet = {
+          ...nextCurated,
+          id: `${nextCurated.id}-${Date.now()}`,
+          createdAt: new Date().toISOString(),
+        };
+        setStudySets((prev) => [clonedSet, ...prev]);
+        setRecords((prev) => ({
+          ...prev,
+          [todayKey]: createDailyRecordFromSet(todayKey, clonedSet),
+        }));
+        return;
+      }
+
       let data: {
         error?: string;
         title?: string;

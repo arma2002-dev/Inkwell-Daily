@@ -1,8 +1,13 @@
-import type { StudySet } from '../types';
+import type { StudySet, UnitTopic } from '../types';
 
-export const DAILY_SETS_BANK: StudySet[] = [
+export interface CuratedStudySet extends StudySet {
+  topic: Exclude<UnitTopic, 'all'>;
+}
+
+export const DAILY_SETS_BANK: CuratedStudySet[] = [
   {
     id: 'daily-units-1',
+    topic: 'kitchen',
     title: 'Day 01 · 주방, 카페 & 마트에서 쓰는 생활 단위 5문장',
     sourceSummary:
       '요리 계량(tablespoon, pinch, half-inch), 카페 주문(ounce, shot), 마트 쇼핑(dozen, gallon, quarter pound) 등 일상에서 바로 쓰는 영어 단위 문장입니다.',
@@ -143,6 +148,7 @@ export const DAILY_SETS_BANK: StudySet[] = [
   },
   {
     id: 'daily-units-2',
+    topic: 'time_distance',
     title: 'Day 02 · 거리, 시간 & 날씨 온도 생활 단위 5문장',
     sourceSummary:
       '도심 이동 거리(blocks, miles, feet), 기온(degrees Fahrenheit), 배차·시간 간격(every 20 minutes, half an hour) 표현을 담은 5문장입니다.',
@@ -283,6 +289,7 @@ export const DAILY_SETS_BANK: StudySet[] = [
   },
   {
     id: 'daily-units-3',
+    topic: 'shopping',
     title: 'Day 03 · 쇼핑, 가격 & 일상 분량 생활 단위 5문장',
     sourceSummary:
       '가격과 할인(bucks a pound, percent off), 인당 요금(per person), 묶음·잔·줌 단위(pair, three-pack, handful, glasses)를 익히는 5문장입니다.',
@@ -421,14 +428,362 @@ export const DAILY_SETS_BANK: StudySet[] = [
       },
     ],
   },
+  {
+    id: 'daily-units-4',
+    topic: 'kitchen',
+    title: 'Day 04 · 홈베이킹 & 음료 레시피 계량 단위 5문장',
+    sourceSummary:
+      '컵, 티스푼, 쿼트, 온스, 오븐 온도 등 영어 레시피와 부엌 대화에서 바로 쓰이는 계량 표현 5문장입니다.',
+    createdAt: '2026-11-24T00:00:00.000Z',
+    isSample: true,
+    sentences: [
+      {
+        id: 'du4-s1',
+        english:
+          'Preheat the oven to three hundred fifty degrees and whisk two cups of flour with one teaspoon of baking soda.',
+        korean:
+          '오븐을 화씨 350도(약 섭씨 177도)로 예열하고 밀가루 두 컵(약 240g)에 베이킹소다 한 작은술을 섞어 주세요.',
+        contextNote:
+          '미국 베이킹 기본 온도 350°F와 컵(cup)·티스푼(teaspoon) 계량 단위를 함께 익힙니다.',
+        vocabulary: [
+          {
+            word: 'two cups of',
+            meaning: '두 컵 분량의 (1컵 ≈ 240ml)',
+            example: 'Pour two cups of warm broth slowly into the risotto pan.',
+          },
+          {
+            word: 'one teaspoon of',
+            meaning: '한 작은술 (약 5ml)',
+            example: 'Mix one teaspoon of cinnamon with brown sugar.',
+          },
+        ],
+      },
+      {
+        id: 'du4-s2',
+        english:
+          'Add a splash of cold milk and half a teaspoon of honey to balance the bitter roast of your morning coffee.',
+        korean:
+          '모닝커피의 쌉싸름한 맛을 잡아주려면 차가운 우유를 살짝(한 방울) 넣고 꿀 반 작은술을 더해 보세요.',
+        contextNote:
+          '정확한 눈금 대신 감각적으로 소량을 표현하는 a splash of(살짝/조금 붓는 양)입니다.',
+        vocabulary: [
+          {
+            word: 'a splash of',
+            meaning: '(액체를) 살짝, 한 모금 정도',
+            example: 'Finish the pasta with a splash of starchy cooking water.',
+          },
+          {
+            word: 'half a teaspoon',
+            meaning: '반 작은술 (약 2.5ml)',
+            example: 'Stir in half a teaspoon of vanilla extract off the heat.',
+          },
+        ],
+      },
+      {
+        id: 'du4-s3',
+        english:
+          'Simmer two quarts of vegetable broth in a deep pot until the liquid reduces by roughly one third.',
+        korean:
+          '깊은 냄비에 채소 육수 2쿼트(약 1.9리터)를 넣고 국물이 약 3분의 1 정도 줄어들 때까지 뭉근히 끓여 주세요.',
+        contextNote:
+          '큰 냄비 요리에서 자주 쓰는 부피 단위 quart(1쿼트 ≈ 946ml)와 비율 감소 표현 reduce by one third입니다.',
+        vocabulary: [
+          {
+            word: 'two quarts of',
+            meaning: '2쿼트 분량의 (1쿼트 ≈ 946ml)',
+            example: 'This pot holds up to four quarts of soup.',
+          },
+          {
+            word: 'by one third',
+            meaning: '3분의 1만큼',
+            example: 'We cut our weekly sugar intake by one third.',
+          },
+        ],
+      },
+      {
+        id: 'du4-s4',
+        english:
+          'Measure out eight ounces of dark chocolate and melt it slowly over a pot of barely simmering water.',
+        korean:
+          '다크 초콜릿 8온스(약 227g)를 계량한 뒤, 약하게 끓는 물 냄비 위에서 천천히 중탕해 녹여 주세요.',
+        contextNote:
+          '고체 무게 단위로서의 ounce(1온스 ≈ 28.35g, 8oz = 약 227g) 활용 예시입니다.',
+        vocabulary: [
+          {
+            word: 'eight ounces',
+            meaning: '8온스 (무게 약 227g)',
+            example: 'The recipe calls for eight ounces of softened cream cheese.',
+          },
+          {
+            word: 'measure out',
+            meaning: '정량을 달아 덜어내다',
+            example: 'Measure out the dry ingredients before turning on the mixer.',
+          },
+        ],
+      },
+      {
+        id: 'du4-s5',
+        english:
+          'Serve each bowl with three thin slices of avocado and a generous squeeze of fresh lime juice on top.',
+        korean:
+          '각 그릇마다 얇게 썬 아보카도 세 조각을 올리고 신선한 라임 즙을 듬뿍 짜서 내어 보세요.',
+        contextNote:
+          '조각 수와 즙을 짜 넣는 양을 자연스럽게 표현하는 thin slices와 a generous squeeze of입니다.',
+        vocabulary: [
+          {
+            word: 'a squeeze of',
+            meaning: '(레몬·라임 등을) 한 번 꾹 짠 양',
+            example: 'Grilled fish tastes brighter with a squeeze of lemon.',
+          },
+          {
+            word: 'generous',
+            meaning: '넉넉한, 푸짐한',
+            example: 'Spread a generous layer of jam over warm toast.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'daily-units-5',
+    topic: 'time_distance',
+    title: 'Day 05 · 여행, 일정 & 속도 생활 단위 5문장',
+    sourceSummary:
+      '비행·이동 시간(hour-long, fifteen-minute), 속도(miles per hour), 거리(yards, meters) 등 이동 중 자주 듣는 단위 표현입니다.',
+    createdAt: '2026-11-25T00:00:00.000Z',
+    isSample: true,
+    sentences: [
+      {
+        id: 'du5-s1',
+        english:
+          'The speed limit drops to twenty-five miles per hour as soon as you enter the quiet school zone.',
+        korean:
+          '조용한 어린이 보호구역에 들어서자마자 제한 속도가 시속 25마일(약 40km/h)로 낮아집니다.',
+        contextNote:
+          '차량 속도 단위 miles per hour(mph)를 실생활 운전 상황에서 익히는 문장입니다.',
+        vocabulary: [
+          {
+            word: 'miles per hour',
+            meaning: '시속 ~마일 (1mph ≈ 1.6km/h)',
+            example: 'Highway traffic was moving steadily at sixty miles per hour.',
+          },
+          {
+            word: 'speed limit',
+            meaning: '제한 속도',
+            example: 'Watch for signs showing the local speed limit.',
+          },
+        ],
+      },
+      {
+        id: 'du5-s2',
+        english:
+          'Our morning ferry leaves on the hour, so catching the nine o’clock boat gives us plenty of margin.',
+        korean:
+          '아침 페리는 매시 정각에 출발하므로 9시 배를 타면 시간 여유가 넉넉할 거예요.',
+        contextNote:
+          '정각 출발을 뜻하는 on the hour와 시각 표현 o’clock을 자연스럽게 연결합니다.',
+        vocabulary: [
+          {
+            word: 'on the hour',
+            meaning: '매시 정각에',
+            example: 'The old town clock chimes gently on the hour.',
+          },
+          {
+            word: 'plenty of margin',
+            meaning: '넉넉한 여유분',
+            example: 'Leave ten minutes early to keep plenty of margin.',
+          },
+        ],
+      },
+      {
+        id: 'du5-s3',
+        english:
+          'The trail climbs four hundred feet over the final half mile, offering a clear view of the entire valley.',
+        korean:
+          '등산로는 마지막 0.5마일(약 800m) 구간에서 고도가 400피트(약 122m) 높아지며 계곡 전체가 한눈에 펼쳐집니다.',
+        contextNote:
+          '고도 단위 feet와 짧은 거리 단위 half mile을 등산 안내 문맥으로 배웁니다.',
+        vocabulary: [
+          {
+            word: 'four hundred feet',
+            meaning: '400피트 (고도·길이 약 122m)',
+            example: 'The observation deck sits five hundred feet above the river.',
+          },
+          {
+            word: 'half mile',
+            meaning: '0.5마일 (약 800m)',
+            example: 'There is a rest stop roughly a half mile ahead.',
+          },
+        ],
+      },
+      {
+        id: 'du5-s4',
+        english:
+          'After an eleven-hour flight across the Pacific, even a twenty-minute walk outside helps reset your body clock.',
+        korean:
+          '태평양을 건너는 11시간의 비행 뒤에는 밖에서 단 20분만 걸어도 생체 시계를 되돌리는 데 큰 도움이 됩니다.',
+        contextNote:
+          '하이픈으로 연결된 시간 단위 형용사 eleven-hour와 twenty-minute의 문장 활용입니다.',
+        vocabulary: [
+          {
+            word: 'eleven-hour',
+            meaning: '11시간짜리의',
+            example: 'Bring a neck pillow for an eleven-hour overnight journey.',
+          },
+          {
+            word: 'body clock',
+            meaning: '생체 시계, 수면 리듬',
+            example: 'Morning sunlight is the fastest way to adjust your body clock.',
+          },
+        ],
+      },
+      {
+        id: 'du5-s5',
+        english:
+          'Turn left about a hundred yards past the stone bridge and look for the small wooden signboard.',
+        korean:
+          '돌다리를 지나 약 100야드(약 91m)쯤 가서 왼쪽으로 돈 다음 작은 나무 간판을 찾으세요.',
+        contextNote:
+          '도보 길 안내에서 약 90cm 단위인 yard(야드)가 어떻게 쓰이는지 익힙니다.',
+        vocabulary: [
+          {
+            word: 'a hundred yards',
+            meaning: '100야드 (약 91미터)',
+            example: 'The bookstore is fifty yards past the main intersection.',
+          },
+          {
+            word: 'past',
+            meaning: '~을 지나서',
+            example: 'Walk straight past the post office until you see the park.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'daily-units-6',
+    topic: 'shopping',
+    title: 'Day 06 · 마트 장보기, 영수증 & 수량 생활 단위 5문장',
+    sourceSummary:
+      '묶음, 무게, 할인, 보증금, 팁 비율 등 실제 계산대와 쇼핑 대화에서 쓰이는 단위 표현 5문장입니다.',
+    createdAt: '2026-11-26T00:00:00.000Z',
+    isSample: true,
+    sentences: [
+      {
+        id: 'du6-s1',
+        english:
+          'Could I get half a dozen sourdough rolls and two jars of blueberry jam wrapped separately, please?',
+        korean:
+          '사워도우 롤빵 반 다스(6개)랑 블루베리 잼 두 병을 각각 따로 포장해 주실 수 있을까요?',
+        contextNote:
+          '빵집에서 6개를 뜻하는 half a dozen과 병 단위 jars of를 쓰는 자연스러운 요청입니다.',
+        vocabulary: [
+          {
+            word: 'half a dozen',
+            meaning: '반 다스, 6개',
+            example: 'We bought half a dozen warm pastries for the team.',
+          },
+          {
+            word: 'two jars of',
+            meaning: '병에 담긴 ~ 두 병',
+            example: 'Pick up two jars of tomato sauce for pasta night.',
+          },
+        ],
+      },
+      {
+        id: 'du6-s2',
+        english:
+          'In most sit-down restaurants here, leaving an eighteen percent tip on the subtotal is considered standard.',
+        korean:
+          '이곳의 대부분 테이블 서비스 식당에서는 세전 합계 금액의 18퍼센트를 팁으로 남기는 것이 일반적이에요.',
+        contextNote:
+          '퍼센트 단위(eighteen percent)와 세전 금액 subtotal 개념을 함께 익힙니다.',
+        vocabulary: [
+          {
+            word: 'eighteen percent',
+            meaning: '18퍼센트',
+            example: 'Service charges are often calculated at fifteen to twenty percent.',
+          },
+          {
+            word: 'subtotal',
+            meaning: '세금·팁 제외 소계 금액',
+            example: 'Check the subtotal before applying your discount coupon.',
+          },
+        ],
+      },
+      {
+        id: 'du6-s3',
+        english:
+          'This refill pouch holds thirty-four fluid ounces, which saves nearly twenty percent compared to buying small bottles.',
+        korean:
+          '이 리필 파우치는 34액량온스(약 1리터) 용량이라서 작은 병을 여러 개 사는 것보다 거의 20퍼센트 저렴해요.',
+        contextNote:
+          '세제·음료 라벨에 적힌 fluid ounces(fl oz, 액량 온스)와 절약 비율을 읽는 표현입니다.',
+        vocabulary: [
+          {
+            word: 'fluid ounces',
+            meaning: '액량 온스 (1 fl oz ≈ 29.6ml)',
+            example: 'Carry-on liquids must stay under 3.4 fluid ounces per bottle.',
+          },
+          {
+            word: 'compared to',
+            meaning: '~와 비교하여',
+            example: 'Buying in bulk costs less per ounce compared to single packs.',
+          },
+        ],
+      },
+      {
+        id: 'du6-s4',
+        english:
+          'The farmer’s market sells fresh bunches of basil for two dollars each, or three bunches for five bucks.',
+        korean:
+          '파머스 마켓에서는 신선한 바질 한 다발을 개당 2달러에, 세 다발 묶음은 5달러에 팔고 있어요.',
+        contextNote:
+          '채소·꽃을 세는 단위 bunch(한 다발/한 단)와 단가 each / 묶음 가격 표현입니다.',
+        vocabulary: [
+          {
+            word: 'bunch of',
+            meaning: '(채소·꽃 등의) 한 다발, 한 단',
+            example: 'Grab a fresh bunch of spinach and a bundle of green onions.',
+          },
+          {
+            word: 'each',
+            meaning: '개당, 각각',
+            example: 'These handmade ceramic coasters are six dollars each.',
+          },
+        ],
+      },
+      {
+        id: 'du6-s5',
+        english:
+          'If your checked suitcase weighs over fifty pounds, the airline charges a flat fee of seventy-five dollars.',
+        korean:
+          '위탁 수하물 무게가 50파운드(약 22.7kg)를 넘으면 항공사에서 75달러의 정액 수수료를 부과합니다.',
+        contextNote:
+          '공항 수하물 무게 기준 50 pounds(≈ 22.7kg)와 정액 요금 flat fee 표현입니다.',
+        vocabulary: [
+          {
+            word: 'fifty pounds',
+            meaning: '50파운드 (무게 약 22.7kg)',
+            example: 'Keep your suitcase under fifty pounds to avoid extra fees.',
+          },
+          {
+            word: 'flat fee',
+            meaning: '고정 요금, 정액 수수료',
+            example: 'The courier charges a flat fee regardless of distance.',
+          },
+        ],
+      },
+    ],
+  },
 ];
 
-export const SAMPLE_DAY1_SET: StudySet = DAILY_SETS_BANK[0];
+export const SAMPLE_DAY1_SET: CuratedStudySet = DAILY_SETS_BANK[0];
 
 /**
  * Deterministically selects a 5-sentence StudySet for a given YYYY-MM-DD key.
  */
-export function getCuratedSetForDate(dateKey: string): StudySet {
+export function getCuratedSetForDate(dateKey: string): CuratedStudySet {
   const [y, m, d] = dateKey.split('-').map(Number);
   if (!y || !m || !d) return DAILY_SETS_BANK[0];
   const anchor = Date.UTC(2026, 10, 21);
@@ -436,4 +791,15 @@ export function getCuratedSetForDate(dateKey: string): StudySet {
   const diffDays = Math.round((target - anchor) / 86400000);
   const idx = ((diffDays % DAILY_SETS_BANK.length) + DAILY_SETS_BANK.length) % DAILY_SETS_BANK.length;
   return DAILY_SETS_BANK[idx];
+}
+
+export function pickNextCuratedSet(topic: UnitTopic, currentSetId: string): CuratedStudySet {
+  const pool =
+    topic === 'all'
+      ? DAILY_SETS_BANK
+      : DAILY_SETS_BANK.filter((s) => s.topic === topic);
+  const candidates = pool.length > 0 ? pool : DAILY_SETS_BANK;
+  const currentIdx = candidates.findIndex((s) => s.id === currentSetId);
+  const nextIdx = currentIdx === -1 ? 0 : (currentIdx + 1) % candidates.length;
+  return candidates[nextIdx];
 }
